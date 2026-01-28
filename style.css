@@ -48,3 +48,25 @@ li {
     background: #ff4d4d;
     margin-left: 5px;
 }
+
+/* Thêm vào file style.css cũ */
+.input-group-auth {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-secondary {
+    background: #666;
+}
+
+#authTitle {
+    text-align: center;
+    color: #3ecf8e;
+}

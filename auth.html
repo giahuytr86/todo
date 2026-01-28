@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập - Supabase App</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .auth-card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 320px; }
+        h2 { text-align: center; color: #3ecf8e; margin-bottom: 1.5rem; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #3ecf8e; border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 5px; }
+        .btn-reg { background: #666; }
+        #statusMsg { font-size: 13px; text-align: center; margin-top: 10px; min-height: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <h2 id="title">Chào mừng</h2>
+        <input type="email" id="inpEmail" placeholder="Email">
+        <input type="password" id="inpPass" placeholder="Mật khẩu">
+        <button onclick="handleLogin()">Đăng nhập</button>
+        <button class="btn-reg" onclick="handleRegister()">Đăng ký tài khoản</button>
+        <div id="statusMsg"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // CẤU HÌNH TẠI ĐÂY
+        const SB_URL = 'https://tspucicqnifctlqgcpyb.supabase.co';
+        const SB_KEY = 'sb_publishable_ilN6SvtNmd52zLNIUT1kNQ_Od4-n7Pa';
+        
+        // Sử dụng biến duy nhất để không bị lỗi "Already declared"
+        var _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        const msg = document.getElementById('statusMsg');
+
+        async function handleRegister() {
+            msg.innerText = "Đang xử lý...";
+            const { data, error } = await _supabase.auth.signUp({
+                email: document.getElementById('inpEmail').value,
+                password: document.getElementById('inpPass').value
+            });
+            if (error) { msg.style.color = 'red'; msg.innerText = error.message; }
+            else { msg.style.color = 'green'; msg.innerText = "Đăng ký thành công! Hãy đăng nhập."; }
+        }
+
+        async function handleLogin() {
+            msg.innerText = "Đang đăng nhập...";
+            const { data, error } = await _supabase.auth.signInWithPassword({
+                email: document.getElementById('inpEmail').value,
+                password: document.getElementById('inpPass').value
+            });
+            if (error) { msg.style.color = 'red'; msg.innerText = error.message; }
+            else { window.location.href = 'index.html'; }
+        }
+    </script>
+</body>
+</html>

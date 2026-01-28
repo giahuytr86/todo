@@ -1,26 +1,87 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
-    <title>Supabase CRUD App</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Quản lý công việc</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; padding: 40px; }
+        .main-container { max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .input-box { display: flex; gap: 10px; margin: 20px 0; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 15px; background: #3ecf8e; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-logout { background: #ff4757; padding: 5px 10px; }
+        li { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
+        .done { text-decoration: line-through; color: gray; }
+        .del-link { color: red; cursor: pointer; font-size: 12px; }
+    </style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>Quản lý Công việc (BaaS)</h1>
 
-        <div class="input-group">
-            <input type="text" id="taskInput" placeholder="Nhập công việc mới...">
-            <button onclick="createTask()">Thêm</button>
+    <div class="main-container">
+        <div class="header">
+            <h3>My Tasks</h3>
+            <button class="btn-logout" onclick="logout()">Thoát</button>
         </div>
 
-        <ul id="taskList"></ul>
+        <div class="input-box">
+            <input type="text" id="taskContent" placeholder="Việc cần làm...">
+            <button onclick="addTask()">Thêm</button>
+        </div>
+
+        <ul id="listContainer"></ul>
     </div>
 
-    <script src="script.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SB_URL = 'https://tspucicqnifctlqgcpyb.supabase.co';
+        const SB_KEY = 'sb_publishable_ilN6SvtNmd52zLNIUT1kNQ_Od4-n7Pa';
+        var _supabase = supabase.createClient(SB_URL, SB_KEY);
 
+        // Kiểm tra đăng nhập
+        async function checkSession() {
+            const { data } = await _supabase.auth.getSession();
+            if (!data.session) window.location.href = 'auth.html';
+            else loadTasks();
+        }
+
+        async function loadTasks() {
+            const { data } = await _supabase.from('tasks').select('*').order('created_at', { ascending: false });
+            const list = document.getElementById('listContainer');
+            list.innerHTML = data.map(t => `
+                <li>
+                    <span class="${t.is_completed ? 'done' : ''}" onclick="toggleTask(${t.id}, ${t.is_completed})">${t.content}</span>
+                    <span class="del-link" onclick="deleteTask(${t.id})">Xóa</span>
+                </li>
+            `).join('');
+        }
+
+        async function addTask() {
+            const content = document.getElementById('taskContent').value;
+            if (!content) return;
+            await _supabase.from('tasks').insert([{ content }]);
+            document.getElementById('taskContent').value = '';
+            loadTasks();
+        }
+
+        async function toggleTask(id, status) {
+            await _supabase.from('tasks').update({ is_completed: !status }).eq('id', id);
+            loadTasks();
+        }
+
+        async function deleteTask(id) {
+            if(confirm('Xóa việc này?')) {
+                await _supabase.from('tasks').delete().eq('id', id);
+                loadTasks();
+            }
+        }
+
+        async function logout() {
+            await _supabase.auth.signOut();
+            window.location.href = 'auth.html';
+        }
+
+        checkSession();
+    </script>
+</body>
 </html>
